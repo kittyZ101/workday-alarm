@@ -24,7 +24,24 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return baseline()
     const parsed = JSON.parse(raw)
-    return { ...baseline(), ...parsed, overrides: parsed.overrides || {} }
+    const official = baseline()
+
+    // 官方节假日数据更新后，仍保留用户自己加的放假/补班日期；
+    // 官方日期以最新 baseline 为准，用户自定义日期追加在后面。
+    const holidays = [...new Set([
+      ...official.holidays,
+      ...(Array.isArray(parsed.holidays)
+        ? parsed.holidays.filter((d) => !official.holidays.includes(d))
+        : [])
+    ])]
+    const makeupWorkdays = [...new Set([
+      ...official.makeupWorkdays,
+      ...(Array.isArray(parsed.makeupWorkdays)
+        ? parsed.makeupWorkdays.filter((d) => !official.makeupWorkdays.includes(d))
+        : [])
+    ])].filter((d) => !holidays.includes(d))
+
+    return { ...official, ...parsed, holidays, makeupWorkdays, overrides: parsed.overrides || {} }
   } catch {
     return baseline()
   }

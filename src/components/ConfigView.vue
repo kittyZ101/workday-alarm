@@ -34,18 +34,22 @@ const upcomingSaturdays = computed(() => {
 function addHoliday() {
   if (!newHoliday.value) return
   const key = normalizeKey(newHoliday.value)
-  if (!store.config.holidays.includes(key)) {
-    store.update({ holidays: [...store.config.holidays, key] })
-  }
+  const holidays = store.config.holidays.includes(key)
+    ? store.config.holidays
+    : [...store.config.holidays, key]
+  const makeupWorkdays = store.config.makeupWorkdays.filter((d) => d !== key)
+  store.update({ holidays, makeupWorkdays })
   newHoliday.value = ''
 }
 
 function addWorkday() {
   if (!newWorkday.value) return
   const key = normalizeKey(newWorkday.value)
-  if (!store.config.makeupWorkdays.includes(key)) {
-    store.update({ makeupWorkdays: [...store.config.makeupWorkdays, key] })
-  }
+  const makeupWorkdays = store.config.makeupWorkdays.includes(key)
+    ? store.config.makeupWorkdays
+    : [...store.config.makeupWorkdays, key]
+  const holidays = store.config.holidays.filter((d) => d !== key)
+  store.update({ makeupWorkdays, holidays })
   newWorkday.value = ''
 }
 
