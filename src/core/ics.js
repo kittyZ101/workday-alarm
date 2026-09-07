@@ -19,6 +19,7 @@ export function genIcs(schedule, startDate, endDate, options = {}) {
   for (let d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) {
     const key = normalizeKey(d)
     const info = schedule.infoOf(key)
+    if (options.onlyWork && info.status !== 'work') continue
     let summary
     if (info.status === 'holiday') summary = '放假'
     else if (info.kind === 'makeup') summary = '补班'
