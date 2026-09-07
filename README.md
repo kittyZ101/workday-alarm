@@ -81,6 +81,13 @@ GitHub Pages 只能托管静态前端，跑不了后端。因此：
 - 2026 法定调休为内置基线，2027/2028 官方安排尚未公布；公布后更新 `src/core/holidays.js` 并提高 `DATA_VERSION` 即可（`public/holidays.json` 会自动同步）。若与实际通知不一致，请在「排班 → 手动纠正」调整。
 - Web 版无法直接程序化开/关系统闹钟；iOS 通过快捷指令自动化完成，安卓待正式 App 版本。
 
+## 快捷指令签名（维护说明）
+iOS 不允许导入未签名的 `.shortcut` 文件，因此对外提供的 `public/shortcut.shortcut` 需先用 Mac 签名：
+```bash
+bash scripts/sign-shortcut.sh   # 若先修改了 scripts/shortcut.raw.shortcut
+```
+签名依赖 Mac 上的 iCloud / Shortcuts 登录，只能在 Mac 上执行，Vercel 构建不会重新签名。
+
 ## 下一步
 - 接入可年更的节假日数据源
 - 分享码加编辑口令，避免知道链接就能改
