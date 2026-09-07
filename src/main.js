@@ -23,7 +23,7 @@ async function bootstrap() {
     }
   } else if (packed) {
     try {
-      store.setConfig(decodeConfig(packed))
+      store.loadStatic(decodeConfig(packed))
     } catch (e) {
       console.warn('无法解析静态分享配置：', e)
     }

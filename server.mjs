@@ -5,11 +5,12 @@ import fs from 'node:fs'
 import crypto from 'node:crypto'
 import { buildSchedule } from './src/core/schedule.js'
 import { genIcs } from './src/core/ics.js'
+import { sendIcs } from './src/core/subscribe.js'
 import { HOLIDAY_YEARS } from './src/core/holidays.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3000
-const DATA_FILE = path.join(__dirname, 'data', 'schedules.json')
+const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, 'data', 'schedules.json')
 
 const app = express()
 app.use(express.json({ limit: '256kb' }))
@@ -52,10 +53,11 @@ app.get('/api/health', (req, res) => {
 app.post('/api/schedules', (req, res) => {
   const config = normalizeConfig(req.body)
   const code = crypto.randomBytes(4).toString('hex')
+  const token = crypto.randomBytes(8).toString('hex')
   const store = readStore()
-  store[code] = { config, createdAt: Date.now(), updatedAt: Date.now() }
+  store[code] = { config, token, createdAt: Date.now(), updatedAt: Date.now() }
   writeStore(store)
-  res.json({ code, shareUrl: `#/?code=${code}`, icsUrl: `/ics/${code}.ics`, config })
+  res.json({ code, shareUrl: `#/?code=${code}`, icsUrl: `/ics/${code}.ics`, token, config })
 })
 
 app.get('/api/schedules/:code', (req, res) => {
@@ -68,6 +70,9 @@ app.put('/api/schedules/:code', (req, res) => {
   const store = readStore()
   const item = store[req.params.code]
   if (!item) return res.status(404).json({ error: '未找到该分享' })
+  if (!req.body.token || req.body.token !== item.token) {
+    return res.status(403).json({ error: '没有编辑权限（口令错误）' })
+  }
   item.config = normalizeConfig(req.body)
   item.updatedAt = Date.now()
   writeStore(store)
@@ -86,6 +91,13 @@ app.get('/ics/:code.ics', (req, res) => {
   res.setHeader('Content-Disposition', `inline; filename="workday-${req.params.code}.ics"`)
   res.setHeader('Cache-Control', 'no-cache')
   res.send(ics)
+})
+
+// 无状态订阅：/ics?d=<encodedConfig>，Vercel 与本地一致
+app.get('/ics', (req, res) => {
+  const payload = req.query.d || req.query.c
+  if (!payload) return res.status(400).send('missing d')
+  sendIcs(res, payload)
 })
 
 // 生产模式：托管 dist 静态文件

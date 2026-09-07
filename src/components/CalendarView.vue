@@ -115,6 +115,15 @@ function cellClass(info) {
 
 <template>
   <section class="view calendar-view">
+    <div v-if="store.prevOwnConfig || store.isViewingShared" class="share-banner">
+      <div class="share-banner-title">{{ store.isViewingShared ? '你正在查看一份分享的排班' : '已保存为我的排班' }}</div>
+      <p class="share-banner-text">在这里改动只影响你自己，不会改到对方的订阅。</p>
+      <div class="share-banner-actions">
+        <button v-if="store.isViewingShared" class="mini-btn" @click="store.adoptShared()">存为我的排班</button>
+        <button v-if="store.prevOwnConfig" class="mini-btn" @click="store.restoreOwn()">恢复我的排班</button>
+      </div>
+    </div>
+
     <div class="hero-card">
       <div class="hero-title">这一周，你哪天要上班？</div>
       <p class="hero-text">
