@@ -1,0 +1,26 @@
+{
+  "name": "workday-alarm",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,magenta \"node server.mjs\" \"vite --host 0.0.0.0\"",
+    "dev:web": "vite --host 0.0.0.0",
+    "dev:server": "node server.mjs",
+    "build": "vite build && node scripts/postbuild.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "start": "node server.mjs",
+    "prod": "npm run build && node server.mjs"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "express": "^5.2.1",
+    "vue": "^3.5.41",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "concurrently": "^9.2.1",
+    "vite": "^8.2.2"
+  }
+}

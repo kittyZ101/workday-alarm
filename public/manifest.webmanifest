@@ -1,0 +1,11 @@
+{
+  "name": "上班脑 · 大小周调休闹钟",
+  "short_name": "上班脑",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
