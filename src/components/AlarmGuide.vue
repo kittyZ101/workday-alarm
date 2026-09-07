@@ -2,11 +2,24 @@
 import { computed, ref } from 'vue'
 import { store } from '../store.js'
 import { genIcs, downloadText, isWeChat } from '../core/ics.js'
+import { encodeConfig } from '../core/shareCode.js'
 
 const schedule = computed(() => store.schedule)
-const shortcutUrl = new URL('大小周闹钟.shortcut', location.href).href
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+const isAndroid = /Android/i.test(navigator.userAgent)
 const wechat = isWeChat()
 const downloadStatus = ref('')
+const shortcutUrl = new URL('大小周闹钟.shortcut', location.href).href
+
+function fullUrl(path) {
+  const base = location.origin + location.pathname.replace(/\/$/, '')
+  return path.startsWith('#') ? `${base}/${path}` : `${base}${path}`
+}
+
+// 闹钟专用日历：只包含上班日，日历名固定为「上班脑闹钟」
+const alarmIcsUrl = computed(() => fullUrl('/ics?d=' + encodeURIComponent(encodeConfig(store.config)) + '&alarm=1'))
+const alarmWebcalUrl = computed(() => alarmIcsUrl.value.replace(/^https:/, 'webcal:'))
+const alarmGoogleUrl = computed(() => 'https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(alarmWebcalUrl.value))
 
 async function exportIcs() {
   const now = new Date()
@@ -17,8 +30,6 @@ async function exportIcs() {
   if (result === 'shared') downloadStatus.value = '已打开系统分享，请选择“存储到文件”。'
   else if (result === 'downloaded') downloadStatus.value = '已开始下载，请在浏览器下载记录中查看。'
 }
-
-
 </script>
 
 <template>
@@ -28,17 +39,23 @@ async function exportIcs() {
       <p class="hero-text">设一次，以后系统按日历自动判断：今天到底响不响。</p>
     </div>
 
-    <div class="card">
+    <div v-if="isIOS" class="card">
       <div class="step-tag">iPhone / iOS</div>
-      <div class="card-title">三步配置</div>
+      <div class="card-title">三步配好</div>
+
       <div class="one-tap-box">
-        <a class="primary-btn link-btn" :href="shortcutUrl" download="大小周闹钟.shortcut">一键导入快捷指令</a>
+        <a class="primary-btn link-btn" :href="shortcutUrl" download="大小周闹钟.shortcut">第 0 步：一键导入快捷指令</a>
         <p class="hint small">下载后点文件 → 允许 → 添加快捷指令，名字是「大小周闹钟」。</p>
       </div>
+
       <ol class="steps">
         <li>
-          <b>导入闹钟专用日历</b>
-          <p>点下面「下载闹钟专用 .ics」并导入，新建一个叫「上班脑闹钟」的日历。</p>
+          <b>添加闹钟专用日历</b>
+          <p>点下面按钮订阅；订阅成功后，日历名字会自动是「上班脑闹钟」。</p>
+          <div class="platform-actions">
+            <a class="ghost-btn link-btn" :href="alarmWebcalUrl">一键添加闹钟日历</a>
+            <button class="ghost-btn" @click="exportIcs">没成功？下载 .ics 手动导入</button>
+          </div>
         </li>
         <li>
           <b>建一个「周六上班」闹钟</b>
@@ -50,18 +67,20 @@ async function exportIcs() {
         </li>
       </ol>
       <div v-if="wechat" class="wechat-tip">微信内可能无法下载文件，请点右上角「…」→ 在浏览器打开。</div>
-      <button class="primary-btn" @click="exportIcs">下载闹钟专用 .ics</button>
       <p v-if="downloadStatus" class="ok-text center">{{ downloadStatus }}</p>
     </div>
 
-    <div class="card">
-      <div class="step-tag">安卓 Android</div>
-      <div class="card-title">第一版先这么用</div>
+    <div v-else class="card">
+      <div class="step-tag">{{ isAndroid ? '安卓 Android' : '电脑' }}</div>
+      <div class="card-title">自动闹钟当前仅支持 iPhone</div>
       <ol class="steps">
-        <li><b>看日历</b>：把本站加到主屏幕，每天打开就能看到今天上不上班。</li>
-        <li><b>导入 .ics</b>：下载文件后，用系统日历或第三方日历打开导入。</li>
-        <li><b>自动闹钟</b>：正式 App 版会做成系统原生闹钟；当前原型请先按日历手动开/关周六闹钟。</li>
+        <li><b>先看日历</b>：把本站加到主屏幕，每天打开就能看到今天上不上班。</li>
+        <li><b>手动闹钟</b>：按日历结果，手动开 / 关周六闹钟。</li>
+        <li><b>安卓正式版</b>：后续会做成系统原生闹钟。</li>
       </ol>
+      <div class="platform-actions">
+        <a class="ghost-btn link-btn" :href="alarmGoogleUrl" target="_blank" rel="noopener">添加到 Google 日历</a>
+      </div>
     </div>
 
     <div class="card">

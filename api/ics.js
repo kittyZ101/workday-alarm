@@ -9,5 +9,6 @@ export default async function handler(req, res) {
     res.end('missing d')
     return
   }
-  sendIcs(res, payload)
+  const options = req.query.alarm ? { onlyWork: true, name: '上班脑闹钟' } : {}
+  sendIcs(res, payload, options)
 }

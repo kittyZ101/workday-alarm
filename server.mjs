@@ -97,7 +97,8 @@ app.get('/ics/:code.ics', (req, res) => {
 app.get('/ics', (req, res) => {
   const payload = req.query.d || req.query.c
   if (!payload) return res.status(400).send('missing d')
-  sendIcs(res, payload)
+  const options = req.query.alarm ? { onlyWork: true, name: '上班脑闹钟' } : {}
+  sendIcs(res, payload, options)
 })
 
 // 生产模式：托管 dist 静态文件
