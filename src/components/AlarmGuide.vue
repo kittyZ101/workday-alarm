@@ -41,12 +41,7 @@ async function exportIcs() {
 
     <div v-if="isIOS" class="card">
       <div class="step-tag">iPhone / iOS</div>
-      <div class="card-title">三步配好</div>
-
-      <div class="one-tap-box">
-        <a class="primary-btn link-btn" :href="shortcutUrl" download="大小周闹钟.shortcut">第 0 步：一键导入快捷指令</a>
-        <p class="hint small">下载后点文件 → 允许 → 添加快捷指令，名字是「大小周闹钟」。</p>
-      </div>
+      <div class="card-title">四步配好，以后每天自动响</div>
 
       <ol class="steps">
         <li>
@@ -58,14 +53,31 @@ async function exportIcs() {
           </div>
         </li>
         <li>
-          <b>建一个「周六上班」闹钟</b>
-          <p>时钟 App → 闹钟 → 新增：时间设为你平时起床点，重复选「周六」，标签必须填「周六上班」。</p>
+          <b>导入快捷指令</b>
+          <p>点下面按钮下载；下载后在文件 App 点开 → 允许 → 添加快捷指令，名字是「大小周闹钟」。</p>
+          <div class="platform-actions">
+            <a class="primary-btn link-btn" :href="shortcutUrl" download="大小周闹钟.shortcut">一键导入快捷指令</a>
+          </div>
         </li>
         <li>
-          <b>只建一条自动化</b>
-          <p>快捷指令 → 自动化 → 每周六早上（建议比闹钟早 30 分钟）→ 添加操作「运行快捷指令」→ 选「大小周闹钟」→ 关闭「运行前询问」。</p>
+          <b>建一条「上班日」闹钟</b>
+          <p>时钟 App → 闹钟 → 新增：时间设为你平时起床点，重复选「每天」，标签必须填「上班日」。</p>
+        </li>
+        <li>
+          <b>建一条每天早上的自动化</b>
+          <p>快捷指令 → 自动化 → 每天（建议比闹钟早 30 分钟）→ 添加操作「运行快捷指令」→ 选「大小周闹钟」→ 关闭「运行前询问」。</p>
         </li>
       </ol>
+
+      <div class="card-title">装完自检</div>
+      <ul class="tips">
+        <li>日历里能看到「上班脑闹钟」这个名字。</li>
+        <li>月历里能看到「补班」的日子（说明周日补班也进来了）。</li>
+        <li>快捷指令里有「大小周闹钟」。</li>
+        <li>闹钟里有标签为「上班日」、每天重复的一条闹钟。</li>
+        <li>自动化每天运行，且「运行前询问」已关闭。</li>
+      </ul>
+
       <div v-if="wechat" class="wechat-tip">微信内可能无法下载文件，请点右上角「…」→ 在浏览器打开。</div>
       <p v-if="downloadStatus" class="ok-text center">{{ downloadStatus }}</p>
     </div>
@@ -75,7 +87,7 @@ async function exportIcs() {
       <div class="card-title">自动闹钟当前仅支持 iPhone</div>
       <ol class="steps">
         <li><b>先看日历</b>：把本站加到主屏幕，每天打开就能看到今天上不上班。</li>
-        <li><b>手动闹钟</b>：按日历结果，手动开 / 关周六闹钟。</li>
+        <li><b>手动闹钟</b>：按日历结果，手动开 / 关闹钟。</li>
         <li><b>安卓正式版</b>：后续会做成系统原生闹钟。</li>
       </ol>
       <div class="platform-actions">
@@ -91,9 +103,9 @@ async function exportIcs() {
     <div class="card">
       <div class="card-title">小提示</div>
       <ul class="tips">
-        <li>自动化建议设成周六 6:30，闹钟设 7:00 或 8:00，判断永远先于铃声。</li>
-        <li>法定调休变化后，只需更新日历；快捷指令不用重做。</li>
-        <li>周一至周五正常响，用普通「周一至周五」重复闹钟即可。</li>
+        <li>自动化建议设成每天 6:30，闹钟设 7:00 或 8:00，判断永远先于铃声。</li>
+        <li>法定调休变化后，只需更新日历；快捷指令和闹钟不用重做。</li>
+        <li>休息日想睡懒觉不用管：「上班日」闹钟会自动不响。</li>
       </ul>
     </div>
   </section>
