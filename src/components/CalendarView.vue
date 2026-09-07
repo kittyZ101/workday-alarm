@@ -2,10 +2,12 @@
 import { computed, ref } from 'vue'
 import { store } from '../store.js'
 import { todayKey, startOfWeek, startOfSunday, parseLocalDate, normalizeKey } from '../core/schedule.js'
-import { genIcs, downloadText } from '../core/ics.js'
+import { genIcs, downloadText, isWeChat } from '../core/ics.js'
 import SharePanel from './SharePanel.vue'
 
 const schedule = computed(() => store.schedule)
+const wechat = isWeChat()
+const downloadStatus = ref('')
 const today = new Date()
 const year = ref(today.getFullYear())
 const month = ref(today.getMonth() + 1)
@@ -92,11 +94,14 @@ function nextMonth() {
   if (month.value === 12) { month.value = 1; year.value++ } else { month.value++ }
 }
 
-function exportIcs() {
+async function exportIcs() {
+  downloadStatus.value = ''
   const start = new Date(year.value, 0, 1)
   const end = new Date(year.value, 11, 31)
   const content = genIcs(schedule.value, start, end, { name: '上班脑工作日历' })
-  downloadText('workday-calendar.ics', content)
+  const result = await downloadText('workday-calendar.ics', content)
+  if (result === 'shared') downloadStatus.value = '已打开系统分享，请选择“存储到文件”。'
+  else if (result === 'downloaded') downloadStatus.value = '已开始下载，请在浏览器下载记录中查看。'
 }
 
 function cellClass(info) {
@@ -179,7 +184,9 @@ function cellClass(info) {
       <p class="alarm-note">完整自动开/关闹钟配置，请看底部「闹钟」页。</p>
     </div>
 
+    <div v-if="wechat" class="wechat-tip">微信内可能无法下载文件，请点右上角「…」→ 在浏览器打开。</div>
     <button class="primary-btn" @click="exportIcs">下载 {{ year }} 年工作日历 .ics</button>
+    <p v-if="downloadStatus" class="ok-text center">{{ downloadStatus }}</p>
 
     <SharePanel />
     <p class="foot-note">导入 iPhone「日历」后，即可配合快捷指令自动判断周末闹钟。</p>

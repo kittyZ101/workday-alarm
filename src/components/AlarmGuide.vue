@@ -1,17 +1,23 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { store } from '../store.js'
-import { genIcs, downloadText } from '../core/ics.js'
+import { genIcs, downloadText, isWeChat } from '../core/ics.js'
 
 const schedule = computed(() => store.schedule)
+const wechat = isWeChat()
+const downloadStatus = ref('')
 
-function exportIcs() {
+async function exportIcs() {
   const now = new Date()
   const start = new Date(now.getFullYear(), 0, 1)
   const end = new Date(now.getFullYear() + 2, 11, 31)
   const content = genIcs(schedule.value, start, end, { name: '上班脑工作日历' })
-  downloadText('workday-calendar.ics', content)
+  const result = await downloadText('workday-calendar.ics', content)
+  if (result === 'shared') downloadStatus.value = '已打开系统分享，请选择“存储到文件”。'
+  else if (result === 'downloaded') downloadStatus.value = '已开始下载，请在浏览器下载记录中查看。'
 }
+
+
 </script>
 
 <template>
@@ -38,7 +44,9 @@ function exportIcs() {
           <p>快捷指令 → 自动化 → 每周六早上（建议比闹钟早 30 分钟）：查「上班脑」日历中「开始日期是今天」的日程；如果有，就打开「周六上班」闹钟；否则关闭它。关掉「运行前询问」。</p>
         </li>
       </ol>
+      <div v-if="wechat" class="wechat-tip">微信内可能无法下载文件，请点右上角「…」→ 在浏览器打开。</div>
       <button class="primary-btn" @click="exportIcs">下载 .ics 工作日历</button>
+      <p v-if="downloadStatus" class="ok-text center">{{ downloadStatus }}</p>
     </div>
 
     <div class="card">

@@ -374,6 +374,15 @@ input { font-family: inherit; }
 }
 .error-text { color: var(--red); font-size: 12px; margin: 8px 0 0; }
 .ok-text { color: var(--green); font-size: 12px; margin: 8px 0 0; }
+.ok-text.center { text-align: center; }
+.wechat-tip {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fffbeb;
+  color: #b45309;
+  font-size: 12px;
+}
 
 .share-divider {
   display: flex;

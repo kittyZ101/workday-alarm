@@ -50,14 +50,35 @@ export function genIcs(schedule, startDate, endDate, options = {}) {
   return lines.join('\r\n') + '\r\n'
 }
 
-export function downloadText(filename, text, mime = 'text/calendar') {
+export async function downloadText(filename, text, mime = 'text/calendar') {
   const blob = new Blob([text], { type: `${mime};charset=utf-8` })
+  const file = new File([blob], filename, { type: mime })
+
+  // 手机端优先用系统分享/保存文件，比直接下载更稳定
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: '上班脑工作日历' })
+      return 'shared'
+    } catch (e) {
+      if (e.name === 'AbortError') return 'aborted'
+    }
+  }
+
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = filename
+  a.rel = 'noopener'
+  a.target = '_blank'
   document.body.appendChild(a)
   a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
+  setTimeout(() => {
+    a.remove()
+    URL.revokeObjectURL(url)
+  }, 1500)
+  return 'downloaded'
+}
+
+export function isWeChat() {
+  return /MicroMessenger/i.test(navigator.userAgent)
 }
