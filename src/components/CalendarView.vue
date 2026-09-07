@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { store } from '../store.js'
 import { todayKey, startOfWeek, startOfSunday, parseLocalDate, normalizeKey } from '../core/schedule.js'
 import { genIcs, downloadText, isWeChat } from '../core/ics.js'
+import { getOfficial } from '../core/holidays.js'
 import SharePanel from './SharePanel.vue'
 
 const schedule = computed(() => store.schedule)
@@ -63,6 +64,8 @@ const weekDays = computed(() => {
     return { key, d, info: schedule.value.infoOf(key) }
   })
 })
+
+const currentYearOfficial = computed(() => getOfficial(year.value))
 
 const alarmSuggestion = computed(() => {
   const now = parseLocalDate(todayKey())
@@ -137,6 +140,10 @@ function cellClass(info) {
         <div class="month-title">{{ year }}年{{ monthNames[month - 1] }}</div>
         <button class="nav-btn" @click="nextMonth">›</button>
       </div>
+
+      <p v-if="!currentYearOfficial.published" class="hint small" style="margin: 6px 0 10px;">
+        该年度官方调休尚未公布，先按你的排班规则显示；公布后自动更新。
+      </p>
 
       <div class="week-head">
         <span v-for="w in weekLabels" :key="w" :class="{ sun: w === '日' }">{{ w }}</span>

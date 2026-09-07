@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 import { buildSchedule } from './core/schedule.js'
-import { HOLIDAY_YEARS } from './core/holidays.js'
+import { allOfficialDates, latestPublishedYear } from './core/holidays.js'
 
 const STORAGE_KEY = 'workday-alarm-config-v1'
 const OWNED_KEY = 'workday-alarm-owned-code-v1'
@@ -8,40 +8,43 @@ const OWNED_KEY = 'workday-alarm-owned-code-v1'
 const PREV_KEY = 'workday-alarm-prev-config-v1'
 
 function baseline() {
+  const official = allOfficialDates()
   return {
     mode: 'double',
     refMonday: '2026-09-07',
     refIsSmall: false,
-    year: 2026,
-    holidays: [...HOLIDAY_YEARS[2026].holidays],
-    makeupWorkdays: [...HOLIDAY_YEARS[2026].workdays],
+    year: latestPublishedYear(),
+    holidays: [...official.holidays],
+    makeupWorkdays: [...official.workdays],
     overrides: {} // { 'YYYY-MM-DD': 'work' | 'rest' }
   }
+}
+
+// 官方节假日数据更新后，仍保留用户自己加的放假/补班日期；
+// 官方日期以最新 baseline 为准，用户自定义日期追加在后面。
+function mergeWithOfficial(parsed) {
+  const official = baseline()
+  const holidays = [...new Set([
+    ...official.holidays,
+    ...(Array.isArray(parsed.holidays)
+      ? parsed.holidays.filter((d) => !official.holidays.includes(d))
+      : [])
+  ])]
+  const makeupWorkdays = [...new Set([
+    ...official.makeupWorkdays,
+    ...(Array.isArray(parsed.makeupWorkdays)
+      ? parsed.makeupWorkdays.filter((d) => !official.makeupWorkdays.includes(d))
+      : [])
+  ])].filter((d) => !holidays.includes(d))
+
+  return { ...official, ...parsed, holidays, makeupWorkdays, overrides: parsed.overrides || {} }
 }
 
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return baseline()
-    const parsed = JSON.parse(raw)
-    const official = baseline()
-
-    // 官方节假日数据更新后，仍保留用户自己加的放假/补班日期；
-    // 官方日期以最新 baseline 为准，用户自定义日期追加在后面。
-    const holidays = [...new Set([
-      ...official.holidays,
-      ...(Array.isArray(parsed.holidays)
-        ? parsed.holidays.filter((d) => !official.holidays.includes(d))
-        : [])
-    ])]
-    const makeupWorkdays = [...new Set([
-      ...official.makeupWorkdays,
-      ...(Array.isArray(parsed.makeupWorkdays)
-        ? parsed.makeupWorkdays.filter((d) => !official.makeupWorkdays.includes(d))
-        : [])
-    ])].filter((d) => !holidays.includes(d))
-
-    return { ...official, ...parsed, holidays, makeupWorkdays, overrides: parsed.overrides || {} }
+    return mergeWithOfficial(JSON.parse(raw))
   } catch {
     return baseline()
   }
@@ -77,6 +80,13 @@ export const store = reactive({
 
   setConfig(config) {
     this.config = { ...baseline(), ...config, overrides: config.overrides || {} }
+    persist(this.config)
+  },
+
+  // 在线数据更新后，把最新的官方放假/补班合并进当前排班（保留用户自定义）。
+  refreshOfficial() {
+    const parsed = this.config && typeof this.config === 'object' ? this.config : {}
+    this.config = mergeWithOfficial(parsed)
     persist(this.config)
   },
 

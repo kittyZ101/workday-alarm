@@ -6,7 +6,7 @@ import crypto from 'node:crypto'
 import { buildSchedule } from './src/core/schedule.js'
 import { genIcs } from './src/core/ics.js'
 import { sendIcs } from './src/core/subscribe.js'
-import { HOLIDAY_YEARS } from './src/core/holidays.js'
+import { allOfficialDates } from './src/core/holidays.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3000
@@ -34,7 +34,7 @@ function writeStore(store) {
 
 function normalizeConfig(body = {}) {
   const year = Number(body.year) || 2026
-  const official = HOLIDAY_YEARS[2026]
+  const official = allOfficialDates()
   return {
     mode: ['double', 'single', 'alternating'].includes(body.mode) ? body.mode : 'double',
     refMonday: typeof body.refMonday === 'string' ? body.refMonday : '2026-09-07',

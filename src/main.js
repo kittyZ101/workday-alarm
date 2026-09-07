@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { store } from './store.js'
 import { decodeConfig } from './core/shareCode.js'
+import { fetchLatestHolidays } from './core/holidayRemote.js'
 import './style.css'
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -11,6 +12,14 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 }
 
 async function bootstrap() {
+  // 先在线更新官方节假日数据（失败自动回退内置），再加载分享配置。
+  try {
+    const changed = await fetchLatestHolidays()
+    if (changed) store.refreshOfficial()
+  } catch (e) {
+    console.warn('节假日在线更新失败，使用内置数据：', e)
+  }
+
   const hash = location.hash || ''
   const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '')
   const code = params.get('code')

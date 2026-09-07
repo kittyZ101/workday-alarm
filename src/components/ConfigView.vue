@@ -2,20 +2,24 @@
 import { computed, ref } from 'vue'
 import { store } from '../store.js'
 import { MODES, parseLocalDate, normalizeKey, todayKey } from '../core/schedule.js'
-import { HOLIDAY_YEARS } from '../core/holidays.js'
+import { allOfficialDates, publishedYears, pendingYears } from '../core/holidays.js'
 
 const schedule = computed(() => store.schedule)
 const newHoliday = ref('')
 const newWorkday = ref('')
 
+const official = allOfficialDates()
+const publishedYearList = publishedYears()
+const pendingYearList = pendingYears()
+
 const customHolidays = computed(() => {
-  const official = new Set(HOLIDAY_YEARS[2026].holidays)
-  return store.config.holidays.filter((key) => !official.has(key))
+  const officialSet = new Set(official.holidays)
+  return store.config.holidays.filter((key) => !officialSet.has(key))
 })
 
 const customWorkdays = computed(() => {
-  const official = new Set(HOLIDAY_YEARS[2026].workdays)
-  return store.config.makeupWorkdays.filter((key) => !official.has(key))
+  const officialSet = new Set(official.workdays)
+  return store.config.makeupWorkdays.filter((key) => !officialSet.has(key))
 })
 
 const upcomingSaturdays = computed(() => {
@@ -125,7 +129,7 @@ function removeWorkday(key) {
         <span>加一个放假日期</span>
         <input type="date" v-model="newHoliday" @change="addHoliday" />
       </label>
-      <p class="hint small">内置官方假期 {{ HOLIDAY_YEARS[2026].holidays.length }} 天；下面只显示你额外添加的放假日期。</p>
+      <p class="hint small">内置官方假期 {{ official.holidays.length }} 天；下面只显示你额外添加的放假日期。</p>
       <div v-if="customHolidays.length" class="chip-list">
         <span v-for="key in customHolidays" :key="key" class="chip holiday-chip">
           {{ key }} 放
@@ -137,7 +141,7 @@ function removeWorkday(key) {
         <span>加一个补班日期</span>
         <input type="date" v-model="newWorkday" @change="addWorkday" />
       </label>
-      <p class="hint small">内置官方补班 {{ HOLIDAY_YEARS[2026].workdays.length }} 天；下面只显示你额外添加的补班日期。</p>
+      <p class="hint small">内置官方补班 {{ official.workdays.length }} 天；下面只显示你额外添加的补班日期。</p>
       <div v-if="customWorkdays.length" class="chip-list">
         <span v-for="key in customWorkdays" :key="key" class="chip workday-chip">
           {{ key }} 班
@@ -146,12 +150,10 @@ function removeWorkday(key) {
       </div>
     </div>
 
-    <div class="card warn-card">
-      <div class="warn-title">数据说明</div>
-      <p class="hint">
-        内置的是 2026 年法定节假日调休基线。每年官方发布新安排后，App 会更新数据。
-        如果你发现与实际通知不一致，先在「手动纠正」里调整。
-      </p>
+    <div class="card">
+      <div class="card-title">官方节假日数据</div>
+      <p class="hint">已收录年份：{{ publishedYearList.join('、') }}；待公布年份：{{ pendingYearList.join('、') }}。</p>
+      <p class="hint small">每年国务院办公厅公布后会自动更新；发现与通知不一致时，先在上方「手动纠正」里调整。</p>
     </div>
 
     <button class="ghost-btn" @click="store.reset()">恢复默认配置</button>

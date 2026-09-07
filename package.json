@@ -7,7 +7,7 @@
     "dev": "concurrently -n server,web -c blue,magenta \"node server.mjs\" \"vite --host 0.0.0.0\"",
     "dev:web": "vite --host 0.0.0.0",
     "dev:server": "node server.mjs",
-    "build": "vite build && node scripts/postbuild.mjs",
+    "build": "node scripts/sync-holidays.mjs && vite build && node scripts/postbuild.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "start": "node server.mjs",
     "prod": "npm run build && node server.mjs"

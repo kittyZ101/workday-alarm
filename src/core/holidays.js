@@ -1,8 +1,13 @@
-// 2026 年国务院办公厅节假日调休安排（内置基线）
-// 说明：节假日政策每年都会公布，如有出入，用户在「配置」里手动纠正即可。
-// 数据格式：YYYY-MM-DD
+// 国务院办公厅公布的法定节假日调休数据。
+// 维护指南：
+//   1) 新增年份：在 HOLIDAY_YEARS 加一条，`published: true` 并填好 holidays / workdays。
+//   2) 尚未公布的年份：`published: false`、空数组占位，界面会显示「待公布」。
+//   3) 每次改数据后把 DATA_VERSION 加 1（在线更新据此判断新旧，防止旧数据覆盖新数据）。
+
+export const DATA_VERSION = 3
+
 export const HOLIDAYS_2026 = {
-  name: '2026年法定节假日调休（基线）',
+  name: '2026年法定节假日调休（国务院办公厅）',
   // 法定放假日期（不区分周末，用于覆盖“本来要上班但放假”的日子）
   holidays: [
     // 元旦
@@ -34,5 +39,86 @@ export const HOLIDAYS_2026 = {
 }
 
 export const HOLIDAY_YEARS = {
-  2026: HOLIDAYS_2026
+  2026: {
+    name: HOLIDAYS_2026.name,
+    published: true,
+    holidays: HOLIDAYS_2026.holidays,
+    workdays: HOLIDAYS_2026.workdays
+  },
+  2027: {
+    name: '2027年法定节假日调休（待公布）',
+    published: false,
+    holidays: [],
+    workdays: []
+  },
+  2028: {
+    name: '2028年法定节假日调休（待公布）',
+    published: false,
+    holidays: [],
+    workdays: []
+  }
+}
+
+export function getOfficial(year) {
+  return HOLIDAY_YEARS[year] || {
+    name: `${year}年（暂无数据）`,
+    published: false,
+    holidays: [],
+    workdays: []
+  }
+}
+
+export function allYears() {
+  return Object.keys(HOLIDAY_YEARS).map(Number).sort((a, b) => a - b)
+}
+
+export function publishedYears() {
+  return allYears().filter((y) => HOLIDAY_YEARS[y] && HOLIDAY_YEARS[y].published)
+}
+
+export function pendingYears() {
+  return allYears().filter((y) => !(HOLIDAY_YEARS[y] && HOLIDAY_YEARS[y].published))
+}
+
+export function latestPublishedYear() {
+  const years = publishedYears()
+  return years.length ? Math.max(...years) : new Date().getFullYear()
+}
+
+// 把所有「已公布」年份的放假/补班日期合并成一份平铺列表。
+export function allOfficialDates() {
+  const holidays = new Set()
+  const workdays = new Set()
+  for (const y of publishedYears()) {
+    const d = HOLIDAY_YEARS[y]
+    for (const key of d.holidays || []) holidays.add(key)
+    for (const key of d.workdays || []) workdays.add(key)
+  }
+  return { holidays: [...holidays], workdays: [...workdays] }
+}
+
+// 用远程数据覆盖内置数据：仅接受同版本或更新版本，避免旧数据回退。
+export function applyRemoteData(payload) {
+  if (!payload || typeof payload !== 'object') return false
+  const version = Number(payload.version)
+  if (!Number.isFinite(version) || version < DATA_VERSION) return false
+  const years = payload.years
+  if (!years || typeof years !== 'object') return false
+
+  let changed = false
+  for (const [key, raw] of Object.entries(years)) {
+    const y = Number(key)
+    if (!Number.isInteger(y) || !raw || typeof raw !== 'object') continue
+    const holidays = Array.isArray(raw.holidays) ? raw.holidays : []
+    const workdays = Array.isArray(raw.workdays) ? raw.workdays : []
+    const published = raw.published === true || holidays.length > 0 || workdays.length > 0
+    HOLIDAY_YEARS[y] = {
+      name: raw.name || `${y}年法定节假日调休`,
+      published,
+      holidays,
+      workdays
+    }
+    changed = true
+  }
+  return changed
 }
