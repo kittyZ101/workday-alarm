@@ -4,6 +4,7 @@ import { store } from '../store.js'
 import { genIcs, downloadText, isWeChat } from '../core/ics.js'
 
 const schedule = computed(() => store.schedule)
+const shortcutUrl = new URL('大小周闹钟.shortcut', location.href).href
 const wechat = isWeChat()
 const downloadStatus = ref('')
 
@@ -30,18 +31,22 @@ async function exportIcs() {
     <div class="card">
       <div class="step-tag">iPhone / iOS</div>
       <div class="card-title">三步配置</div>
+      <div class="one-tap-box">
+        <a class="primary-btn link-btn" :href="shortcutUrl" download="大小周闹钟.shortcut">一键导入快捷指令</a>
+        <p class="hint small">下载后点文件 → 允许 → 添加快捷指令，名字是「大小周闹钟」。</p>
+      </div>
       <ol class="steps">
         <li>
           <b>导入闹钟专用日历</b>
-          <p>点下面下载并导入，新建一个叫「上班脑闹钟」的日历。它只标记要上班的日子，用来判断周六闹钟。</p>
+          <p>点下面「下载闹钟专用 .ics」并导入，新建一个叫「上班脑闹钟」的日历。</p>
         </li>
         <li>
-          <b>建一个「周末上班」闹钟</b>
-          <p>时钟 App → 闹钟 → 新增：时间设为你平时起床点，重复选「周六」，标签填「周六上班」。</p>
+          <b>建一个「周六上班」闹钟</b>
+          <p>时钟 App → 闹钟 → 新增：时间设为你平时起床点，重复选「周六」，标签必须填「周六上班」。</p>
         </li>
         <li>
-          <b>做一条自动化</b>
-          <p>快捷指令 → 自动化 → 每周六早上（建议比闹钟早 30 分钟）：查「上班脑闹钟」日历中「开始日期是今天」的日程；如果有，就打开「周六上班」闹钟；否则关闭它。关掉「运行前询问」。</p>
+          <b>只建一条自动化</b>
+          <p>快捷指令 → 自动化 → 每周六早上（建议比闹钟早 30 分钟）→ 添加操作「运行快捷指令」→ 选「大小周闹钟」→ 关闭「运行前询问」。</p>
         </li>
       </ol>
       <div v-if="wechat" class="wechat-tip">微信内可能无法下载文件，请点右上角「…」→ 在浏览器打开。</div>

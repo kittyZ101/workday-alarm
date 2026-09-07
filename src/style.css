@@ -400,3 +400,12 @@ input { font-family: inherit; }
   background: var(--line);
 }
 .server-note { color: #b45309; margin-top: 8px; }
+
+.one-tap-box {
+  background: #f5f8ff;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.link-btn { display: block; text-align: center; text-decoration: none; }
