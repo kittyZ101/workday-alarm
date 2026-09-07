@@ -401,6 +401,17 @@ input { font-family: inherit; }
 }
 .server-note { color: #b45309; margin-top: 8px; }
 
+.subscribe-guide {
+  border: 1px solid #dbeafe;
+  background: #f5f8ff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-top: 12px;
+}
+.subscribe-guide-title { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.platform-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.platform-actions .link-btn { flex: 0 0 auto; margin: 0; }
+
 .share-banner {
   border: 1px solid #fed7aa;
   background: #fff7ed;

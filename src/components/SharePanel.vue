@@ -7,6 +7,9 @@ const staticUrl = ref('')
 const showIcs = ref(false)
 const copied = ref('')
 
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+const isAndroid = /Android/i.test(navigator.userAgent)
+
 function fullUrl(path) {
   const base = location.origin + location.pathname.replace(/\/$/, '')
   return path.startsWith('#') ? `${base}/${path}` : `${base}${path}`
@@ -14,6 +17,8 @@ function fullUrl(path) {
 
 // 无状态订阅链接：把当前排班直接编码进 URL，服务端当场生成 .ics
 const icsUrl = computed(() => fullUrl('/ics?d=' + encodeURIComponent(encodeConfig(store.config))))
+const webcalUrl = computed(() => icsUrl.value.replace(/^https:/, 'webcal:'))
+const googleCalendarUrl = computed(() => 'https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(webcalUrl.value))
 
 function makeStaticUrl() {
   staticUrl.value = fullUrl(`#/?c=${encodeConfig(store.config)}`)
@@ -61,7 +66,7 @@ async function copy(text, label) {
     </div>
 
     <button class="ghost-btn" @click="generateSubscription">
-      生成日历订阅链接
+      添加订阅到日历
     </button>
 
     <div v-if="showIcs" class="url-box">
@@ -70,9 +75,33 @@ async function copy(text, label) {
         <input class="url-input" :value="icsUrl" readonly @focus="$event.target.select()" />
         <button class="mini-btn" @click="copy(icsUrl, '已复制订阅链接')">复制</button>
       </div>
-      <p class="hint small">iOS：设置 → 日历 → 账户 → 添加账户 → 其他 → 添加已订阅的日历，粘贴订阅链接。</p>
-      <p class="hint small">订阅是无状态的，链接会随你的排班自动更新；改完排班后，删除旧订阅、用它重新订阅即可。</p>
-      <p class="hint small">订阅需要部署到 Vercel / 服务器；若当前是纯静态托管（如 GitHub Pages），请改为下载 .ics 导入。</p>
+    </div>
+
+    <div v-if="showIcs" class="subscribe-guide">
+      <div class="subscribe-guide-title">添加到日历</div>
+
+      <div class="platform-actions">
+        <a v-if="isIOS" class="primary-btn link-btn" :href="webcalUrl">iPhone 一键添加订阅</a>
+        <a v-if="!isIOS" class="primary-btn link-btn" :href="googleCalendarUrl" target="_blank" rel="noopener">添加到 Google 日历</a>
+      </div>
+
+      <ol class="steps">
+        <li v-if="isIOS">
+          <b>如果一键添加没反应</b>
+          <p>复制上面的链接 → 设置 → 日历 → 账户 → 添加账户 → 其他 → 添加已订阅的日历 → 粘贴。</p>
+        </li>
+        <li v-if="isAndroid">
+          <b>如果上面没自动打开</b>
+          <p>复制链接 → Google 日历 → 设置 → 添加日历 → 从网址添加 → 粘贴。</p>
+        </li>
+        <li v-if="!isIOS && !isAndroid">
+          <b>电脑</b>
+          <p>复制链接，粘到日历 App 的「订阅日历 / 从 URL 添加」里。</p>
+        </li>
+      </ol>
+
+      <p class="hint small">改排班后订阅链接会更新，删掉旧订阅、用新链接重新添加即可。</p>
+      <p class="hint small">订阅需要部署到 Vercel / 服务器；纯静态托管请下载 .ics 导入。</p>
     </div>
 
     <p v-if="copied" class="ok-text">{{ copied }}</p>
