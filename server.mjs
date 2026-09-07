@@ -103,6 +103,16 @@ app.get('/ics', (req, res) => {
 
 // 生产模式：托管 dist 静态文件
 const distDir = path.join(__dirname, 'dist')
+
+// 快捷指令文件：强制下载，避免 iOS/浏览器把二进制 plist 当文本打开成乱码
+app.get('/shortcut.shortcut', (req, res) => {
+  const file = path.join(distDir, 'shortcut.shortcut')
+  if (!fs.existsSync(file)) return res.status(404).send('not found')
+  res.setHeader('Content-Type', 'application/octet-stream')
+  res.setHeader('Content-Disposition', 'attachment; filename="workday-alarm.shortcut"')
+  res.sendFile(file)
+})
+
 if (fs.existsSync(distDir)) {
   app.use(express.static(distDir))
   app.use((req, res, next) => {

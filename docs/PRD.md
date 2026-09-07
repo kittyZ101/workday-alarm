@@ -200,7 +200,7 @@ iOS 不允许第三方直接开/关系统闹钟，因此采用系统能力组合
   - `ics.js`：ICS 生成。
   - `shareCode.js`：配置编码/解码。
   - `AlarmGuide.vue`：安装向导。
-  - `大小周闹钟.shortcut`：快捷指令文件。
+  - `public/shortcut.shortcut`：快捷指令文件（以 `attachment` 下载）。
 
 ---
 

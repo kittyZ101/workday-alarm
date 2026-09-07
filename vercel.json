@@ -3,5 +3,14 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/ics", "destination": "/api/ics" }
+  ],
+  "headers": [
+    {
+      "source": "/shortcut.shortcut",
+      "headers": [
+        { "key": "Content-Type", "value": "application/octet-stream" },
+        { "key": "Content-Disposition", "value": "attachment; filename=\"workday-alarm.shortcut\"" }
+      ]
+    }
   ]
 }

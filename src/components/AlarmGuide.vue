@@ -9,7 +9,7 @@ const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
 const isAndroid = /Android/i.test(navigator.userAgent)
 const wechat = isWeChat()
 const downloadStatus = ref('')
-const shortcutUrl = new URL('大小周闹钟.shortcut', location.href).href
+const shortcutUrl = new URL('shortcut.shortcut', location.href).href
 
 function fullUrl(path) {
   const base = location.origin + location.pathname.replace(/\/$/, '')
@@ -54,9 +54,9 @@ async function exportIcs() {
         </li>
         <li>
           <b>导入快捷指令</b>
-          <p>点下面按钮下载；下载后在文件 App 点开 → 允许 → 添加快捷指令，名字是「大小周闹钟」。</p>
+          <p>点下面按钮下载；完成后到「文件」App → 下载，点开下载的快捷指令文件 → 允许 → 添加快捷指令，名字是「大小周闹钟」。</p>
           <div class="platform-actions">
-            <a class="primary-btn link-btn" :href="shortcutUrl" download="大小周闹钟.shortcut">一键导入快捷指令</a>
+            <a class="primary-btn link-btn" :href="shortcutUrl" download="大小周闹钟.shortcut">一键下载快捷指令</a>
           </div>
         </li>
         <li>
