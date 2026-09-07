@@ -88,7 +88,7 @@ app.get('/ics/:code.ics', (req, res) => {
   const schedule = buildSchedule(item.config)
   const ics = genIcs(schedule, start, end, { name: '上班脑工作日历' })
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
-  res.setHeader('Content-Disposition', `inline; filename="workday-${req.params.code}.ics"`)
+  res.setHeader('Content-Disposition', "attachment; filename=\"workday-alarm.shortcut\"; filename*=UTF-8''%E5%A4%A7%E5%B0%8F%E5%91%A8%E9%97%B9%E9%92%9F.shortcut")
   res.setHeader('Cache-Control', 'no-cache')
   res.send(ics)
 })
@@ -109,7 +109,7 @@ app.get('/shortcut.shortcut', (req, res) => {
   const file = path.join(distDir, 'shortcut.shortcut')
   if (!fs.existsSync(file)) return res.status(404).send('not found')
   res.setHeader('Content-Type', 'application/octet-stream')
-  res.setHeader('Content-Disposition', 'attachment; filename="workday-alarm.shortcut"')
+  res.setHeader('Content-Disposition', "attachment; filename=\"workday-alarm.shortcut\"; filename*=UTF-8''%E5%A4%A7%E5%B0%8F%E5%91%A8%E9%97%B9%E9%92%9F.shortcut")
   res.sendFile(file)
 })
 
